@@ -7,7 +7,7 @@ class SubsForm extends Component {
         name: '',
         team: '',
         paid: 0,
-        teams: ['National League', 'D1', 'D2', 'D3', 'D4'],
+        teams: ['National League', 'D1', 'D2', 'D3', 'D4', 'U18', 'U16', 'U14'],
         autocomplete: []
     }
 
@@ -15,6 +15,7 @@ class SubsForm extends Component {
         e.preventDefault();
     
         const { name, team, paid } = this.state;
+        
         const newEntry = {
           name,
           team,
@@ -51,7 +52,10 @@ class SubsForm extends Component {
               <label htmlFor="inputTeam">Player's Team</label>
               <input type="text" className="form-control form-border" id="inputTeam" name="team" placeholder="Enter players club e.g. D2" value={this.state.team} onChange={this.handleInputChange} />
               <ul className="list-group">
-                { this.state.autocomplete.map(team => <li className="list-group-item" key={team} onClick={() => this.handleSelectedAutocomplete(team)}>{team}</li> ) }
+                { this.state.autocomplete.map(team => 
+                    <li className="list-group-item" key={team} onClick={() => this.handleSelectedAutocomplete(team)}>{team}</li> 
+                    ) 
+                }
               </ul>
             </div>
             <div className="form-group">
