@@ -25,3 +25,11 @@ Install the dependencies by running: `pip install -r requirements.txt`
 
 In Python, a sub-directory that includes a __init__.py file is considered a package, and can be imported. When you import a package, the __init__.py executes and defines what symbols the package exposes to the outside world.
 
+
+# Libraries Used
+
+flask - Flask is what will be providing our backend server. It is an easy quick start library. It has excellent documentation/tutorials and has been around a long time.
+
+flask-sqlalchemy - an extension that provides a Flask-friendly wrapper to the popular SQLAlchemy package, which is an Object Relational Mapper or ORM. ORMs allow applications to manage a database using high-level entities such as classes, objects and methods instead of tables and SQL. The job of the ORM is to translate the high-level operations into database commands. The nice thing about SQLAlchemy is that it is an ORM not for one, but for many relational databases. SQLAlchemy supports a long list of database engines, including the popular MySQL, PostgreSQL and SQLite.
+
+flask-migrate - This extension is a Flask wrapper for Alembic, a database migration framework for SQLAlchemy.

@@ -10,3 +10,8 @@ As the application needs more configuration items, they can be added to this cla
 
 class Config(object):
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'magic-key-password'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+        'sqlite:///' + os.path.join(basedir, 'app.db')
+    
+    # This is to signal the application every time a change is about to be made in the database.
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
