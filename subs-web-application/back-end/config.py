@@ -1,5 +1,5 @@
 import os
-
+basedir = os.path.abspath(os.path.dirname(__file__))
 
 ''' ...instead of putting my configuration in the same place where I create my application I will use a slightly more elaborate structure that allows me to keep my configuration in a separate file.
 
