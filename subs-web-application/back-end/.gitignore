@@ -101,5 +101,7 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+# SqlLite
+app.db
 
 # End of https://www.gitignore.io/api/python
