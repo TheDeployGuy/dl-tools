@@ -1,6 +1,6 @@
 from flask_login import current_user, login_user, logout_user, login_required
-from flask import render_template, url_for, redirect
-from app.models import User
+from flask import render_template, url_for, redirect, jsonify
+from app.models import User, Entry
 from app import app
 
 
@@ -30,7 +30,7 @@ def login():
 
 @app.route('/logout')
 def logout():
-    login_user()
+    logout_user()
     return redirect(url_for('index'))
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -45,3 +45,16 @@ def register():
     db.session.commit()
 
     return redirect(url_for('login')) # Replace with successful api response
+
+@app.route('/api/entries', methods=['GET'])
+def get_entries():
+    return jsonify([
+        e.to_dict for e in Entry.query.all()
+    ])
+
+@app.route('/api/entries/<id>', methods=['GET'])
+def get_entry(id):
+    # Get specific entry, need to add check for users
+    entry = Entry.query.filter_by(id=id).first_or_404()
+    return entry
+
