@@ -20,6 +20,12 @@ class User(UserMixin, db.Model):
     def __repr__(self):
         return '<User {}>'.format(self.username)
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'username': self.username,
+            'entities': self.entries
+        }
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -35,9 +41,16 @@ class Entry(db.Model):
     # This References an id value from the users table
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-
     def __repr__(self):
         return '<Entry {}>'.format(self.details)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'details': self.details,
+            'timestamp': self.timestamp,
+            'user_id': self.user_id
+        }
 
 # Flask-Login knows nothing about databases, it needs the application's help in loading a user. For that reason, the extension expects that the application will configure a user loader function, that can be called to load a user given the ID.
 @login.user_loader
