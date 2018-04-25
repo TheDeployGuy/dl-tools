@@ -15,7 +15,8 @@ class User(UserMixin, db.Model):
     # Argument 2 = Defines the name of a field that will be added to the objects of the 'many' class that points back at the 'one' object. 
     # Argument 3 = Defines how the database query for the relationship will be issues
     entries = db.relationship('Entry', backref='author', lazy='dynamic')
-
+    last_seen = db.Column(db.DateTime, default=datetime.utcnow)
+    
     # This method tells Python how to print objects of this class.
     def __repr__(self):
         return '<User {}>'.format(self.username)
@@ -24,7 +25,8 @@ class User(UserMixin, db.Model):
         return {
             'id': self.id,
             'username': self.username,
-            'entities': self.entries
+            'entities': self.entries,
+            'last_seen': self.last_seen
         }
 
     def set_password(self, password):
