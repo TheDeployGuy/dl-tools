@@ -42,4 +42,6 @@ flask-migrate - This extension is a Flask wrapper for Alembic, a database migrat
 
  flask-login - This extension manages the user logged-in state, so that for example users can log in to the application and then navigate to different pages while the application "remembers" that the user is logged in. It also provides the "remember me" functionality that allows users to remain logged in even after closing the browser window
 
+ `export FLASK_DEBUG=1` - allows flask to be started in debug mode when `flask run` is kicked off. When debug mode is enabled, it allows for flask to display errors in the browser. When the debug mode is disabled a generic error page is displayed to make sure sensitive information is not displayed.
+
  
