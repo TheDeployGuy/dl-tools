@@ -1,8 +1,16 @@
+from datetime import datetime
 from flask_login import current_user, login_user, logout_user, login_required
 from flask import render_template, url_for, redirect, jsonify
 from app.models import User, Entry
 from app import app
 
+
+# This is executed right before the view function, update last_seen of the user
+@app.before_request
+def before_request():
+    if current_user.is_authenticated:
+        current_user.last_seen = datetime.utcnow()
+        db.session.commit()
 
 @app.route('/')
 @app.route('/index')
@@ -54,7 +62,13 @@ def get_entries():
 
 @app.route('/api/entries/<id>', methods=['GET'])
 def get_entry(id):
-    # Get specific entry, need to add check for users
+    # Get specific entry, need to add check to get Entries for a specific user
     entry = Entry.query.filter_by(id=id).first_or_404()
     return entry
+
+@app.route('/api/user/<username>')
+@login_required
+def get_user(username):
+    user = User.filter_by(username=username).first_or_404()
+    return jsonify(user.to_dict())
 
