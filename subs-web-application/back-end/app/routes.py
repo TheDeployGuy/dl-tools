@@ -1,6 +1,6 @@
 from datetime import datetime
 from flask_login import current_user, login_user, logout_user, login_required
-from flask import render_template, url_for, redirect, jsonify
+from flask import render_template, url_for, redirect, jsonify, request
 from app.models import User, Entry
 from app import app
 
@@ -41,34 +41,58 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
-@app.route('/register', methods=['GET', 'POST'])
+@app.route('/api/register', methods=['GET', 'POST'])
 def register():
-    if current_user.is_authenticated:
-        return redirect(url_for('index'))
+    form_data = request.get_json()
 
     # Perform some server side validation of user details then add then
-    user = User(username='[insert username from form]')
-    user.set_password('[insert username from form]')
+    user = User(username=form_data['username'])
+    user.set_password(form_data['password'])
     db.session.add(user)
     db.session.commit()
 
-    return redirect(url_for('login')) # Replace with successful api response
+    return jsonify({'message': 'New User created...'})
+
+@app.route('/api/user', methods=['GET'])
+def get_all_users():
+    return jsonify([e.to_dict for e in User.query.all()])
+
+@app.route('/api/user/<username>', methods=['GET'])
+@login_required
+def get_one_user(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    return jsonify(user.to_dict())
+
+
+@app.route('/api/user/<username>', methods=['PUT'])
+def update_user(username):
+    form_data = request.get_json()
+    user = User.query.filter_by(username=username).first_or_404()
+
+    user.username = form_data['username']
+    user.set_password(form_data['password'])
+
+    db.session.commit()
+
+    return jsonify({'message': 'The user has been updated...'})
+
+
+@app.route('/api/user/<username>', methods=['DELETE'])
+def delete_user(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    db.session.delete(user)
+    db.session.commit()
+
+    return jsonify({'message': 'User has been deleted'})
 
 @app.route('/api/entries', methods=['GET'])
 def get_entries():
-    return jsonify([
-        e.to_dict for e in Entry.query.all()
-    ])
+    return jsonify([e.to_dict for e in Entry.query.all()])
 
 @app.route('/api/entries/<id>', methods=['GET'])
 def get_entry(id):
     # Get specific entry, need to add check to get Entries for a specific user
     entry = Entry.query.filter_by(id=id).first_or_404()
-    return entry
+    return jsonify({'entry': entry})
 
-@app.route('/api/user/<username>')
-@login_required
-def get_user(username):
-    user = User.filter_by(username=username).first_or_404()
-    return jsonify(user.to_dict())
 
