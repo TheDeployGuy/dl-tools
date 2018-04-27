@@ -25,7 +25,6 @@ class User(UserMixin, db.Model):
         return {
             'id': self.id,
             'username': self.username,
-            'entities': self.entries,
             'last_seen': self.last_seen
         }
 
