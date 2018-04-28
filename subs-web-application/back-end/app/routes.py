@@ -4,7 +4,6 @@ from flask import render_template, url_for, redirect, jsonify, request
 from app.models import User, Entry
 from app import app, db
 
-
 # This is executed right before the view function, update last_seen of the user
 @app.before_request
 def before_request():
@@ -70,6 +69,7 @@ def update_user(username):
     form_data = request.get_json()
     user = User.query.filter_by(username=username).first_or_404()
 
+    # Add checks for if the username has changed etc...
     user.username = form_data['username']
     user.set_password(form_data['password'])
 
