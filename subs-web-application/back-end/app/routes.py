@@ -1,8 +1,15 @@
-from datetime import datetime
-from flask_login import current_user, login_user, logout_user, login_required
-from flask import render_template, url_for, redirect, jsonify, request
+from datetime import datetime, timedelta
+from flask_login import current_user, login_required
+from flask import render_template, url_for, redirect, jsonify, request, make_response
 from app.models import User, Entry
 from app import app, db
+import jwt
+
+# def token_required(f):
+#     @wraps(f)
+#     def decorated(*args, **kwargs):
+#         token = None
+#     pass
 
 # This is executed right before the view function, update last_seen of the user
 @app.before_request
@@ -20,30 +27,39 @@ def index():
     return render_template('index.html', title='Home', user=user)
 
 # This function will need to be changed to work with React as I am not using Flask to render my templates
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login', methods=['POST', 'GET'])
 def login():
-    if current_user.is_authenticated:
-        return redirect(url_for('index'))
-    
-    user = User.query.filter_by(username='[insert username from form]').first()
+    auth = request.authorization
+
+    print(auth)
+    if not auth or not auth.username or not auth.password:
+        return make_response('Could not verify login details', 401, {
+            'WWW-Authenticate': 'Basic realm="Login Required"'
+        })
+
+    user = User.query.filter_by(username=auth['username']).first()
     
     # Perform some server side validation of user details then log them in
-    if user is None or not user.check_password('[insert password from form]'):
-        print ('Invalid username or password')
-        return redirect(url_for('login')) # Replace with response with bad username
+    if user is None or not user.check_password(auth['password']):
+        return jsonify({ 'message': 'Invalid username or password'})
     else:
-        login_user(user, remember='[insert remember me status from form]')
-        return redirect(url_for('index'))
+        token = jwt.encode({
+            'id': user.id,
+            'exp': datetime.utcnow() + timedelta(minutes=30)
+        }, app.config['SECRET_KEY'])
+
+        #todo: Return more details
+        return jsonify({ 'token' : token.decode('UTF-8')})
 
 @app.route('/logout')
 def logout():
-    logout_user()
+    # logout_user()
     return redirect(url_for('index'))
 
+########### User Account Routes ####################
 @app.route('/api/register', methods=['GET', 'POST'])
 def register():
     form_data = request.get_json()
-    print(form_data)
 
     # Perform some server side validation of user details then add then
     user = User(username=form_data['username'])
@@ -58,7 +74,6 @@ def get_all_users():
     return jsonify([e.to_dict() for e in User.query.all()])
 
 @app.route('/api/user/<username>', methods=['GET'])
-# @login_required
 def get_one_user(username):
     user = User.query.filter_by(username=username).first_or_404()
     return jsonify(user.to_dict())
@@ -86,14 +101,47 @@ def delete_user(username):
 
     return jsonify({'message': 'User has been deleted'})
 
-@app.route('/api/entries', methods=['GET'])
+
+############# Entries Routes ###################
+@app.route('/api/entry', methods=['POST'])
+def add_entry():
+    form_data = request.get_json()
+
+    entry = Entry(details=form_data['details'], user_id=form_data['user_id'])
+    db.session.add(entry)
+    db.session.commit()
+
+    return jsonify({'message': 'New Subs Entry has been created...'})
+
+@app.route('/api/entry', methods=['GET'])
 def get_entries():
     return jsonify([e.to_dict for e in Entry.query.all()])
 
-@app.route('/api/entries/<id>', methods=['GET'])
+@app.route('/api/entry/<id>', methods=['GET'])
 def get_entry(id):
     # Get specific entry, need to add check to get Entries for a specific user
     entry = Entry.query.filter_by(id=id).first_or_404()
     return jsonify({'entry': entry})
 
+# Update entry
+@app.route('/api/entry/<id>', methods=['PUT'])
+def update_entry(id):
+    form_data = request.get_json()
+    entry = Entry.query.filter_by(id=id).first_or_404()
 
+    # update entry here...
+    entry.details = form_data['details']
+
+    db.session.commit()
+
+    return jsonify({ 'message': 'Entry Updated Successfully...' })
+    
+
+# Delete entry
+@app.route('/api/entry/<id>', methods=['DELETE'])
+def delete_entry(id):
+    entry = Entry.query.filter_by(id=id).first_or_404()
+    db.session.delete(entry)
+    db.session.commit()
+
+    return jsonify({'message': 'Subs Entry has been deleted'})
