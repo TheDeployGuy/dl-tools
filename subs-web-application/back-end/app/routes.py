@@ -4,13 +4,31 @@ from flask import render_template, url_for, redirect, jsonify, request, make_res
 from app.models import User, Entry
 from app import app, db
 import jwt
+from functools import wraps
 
-# def token_required(f):
-#     @wraps(f)
-#     def decorated(*args, **kwargs):
-#         token = None
-#     pass
+# This can now be used on all routes where login is required...
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
 
+        if 'x-access-token' in request.headers:
+            token = request.headers['x-access-token']
+        
+        if not token:
+            return jsonify({'message': 'Token is missing'}), 401
+
+        # Need a try catch block in case the token is not valid and it can't be decoded
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'])
+            current_user = User.query.filter_by(id=data['id']).first()
+        except:
+            return jsonify({'message': 'Token is invalid'}), 401
+
+        return f(current_user, *args, **kwargs)
+
+    return decorated
+    
 # This is executed right before the view function, update last_seen of the user
 @app.before_request
 def before_request():
@@ -136,7 +154,6 @@ def update_entry(id):
 
     return jsonify({ 'message': 'Entry Updated Successfully...' })
     
-
 # Delete entry
 @app.route('/api/entry/<id>', methods=['DELETE'])
 def delete_entry(id):
