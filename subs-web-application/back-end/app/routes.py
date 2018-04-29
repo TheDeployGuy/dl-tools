@@ -22,30 +22,24 @@ def token_required(f):
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'])
             current_user = User.query.filter_by(id=data['id']).first()
+            # todo: Think about better place for this...
+            current_user.last_seen = datetime.utcnow()
+            db.session.commit()
         except:
             return jsonify({'message': 'Token is invalid'}), 401
 
         return f(current_user, *args, **kwargs)
 
     return decorated
-    
-# This is executed right before the view function, update last_seen of the user
-@app.before_request
-def before_request():
-    if current_user.is_authenticated:
-        current_user.last_seen = datetime.utcnow()
-        db.session.commit()
 
 @app.route('/')
-@app.route('/index')
-@login_required
 def index(): 
-    user = {'username': 'Jason'}
+    # todo: Render react index.html (maybe)
     # The render_template() function invokes the Jinja2 template engine that comes bundled with the Flask framework.
-    return render_template('index.html', title='Home', user=user)
+    return render_template('index.html')
 
 # This function will need to be changed to work with React as I am not using Flask to render my templates
-@app.route('/login', methods=['POST', 'GET'])
+@app.route('/api/login', methods=['POST', 'GET'])
 def login():
     auth = request.authorization
 
@@ -69,7 +63,7 @@ def login():
         #todo: Return more details
         return jsonify({ 'token' : token.decode('UTF-8')})
 
-@app.route('/logout')
+@app.route('/api/logout')
 def logout():
     # logout_user()
     return redirect(url_for('index'))
