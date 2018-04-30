@@ -32,6 +32,22 @@ def token_required(f):
 
     return decorated
 
+def admin_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        # Since this is the 2nd function called, we know we can already get the token...
+        token = request.headers['x-access-token']
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'])
+            current_user = User.query.filter_by(id=data['id']).first()
+            if current_user.is_admin == False:
+                return jsonify({'message': 'Permission Denied'}), 401
+        except:
+            return jsonify({'message': 'admin invalid'}), 401
+        
+        return f(*args, **kwargs)
+    return decorated
+
 @app.route('/')
 def index(): 
     # todo: Render react index.html (maybe)
@@ -81,6 +97,7 @@ def register():
 
 @app.route('/api/user', methods=['GET'])
 @token_required
+@admin_required
 def get_all_users(current_user):
     return jsonify([e.to_dict() for e in User.query.all()])
 
