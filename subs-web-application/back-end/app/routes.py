@@ -42,8 +42,6 @@ def index():
 @app.route('/api/login', methods=['POST', 'GET'])
 def login():
     auth = request.authorization
-
-    print(auth)
     if not auth or not auth.username or not auth.password:
         return make_response('Could not verify login details', 401, {
             'WWW-Authenticate': 'Basic realm="Login Required"'
@@ -82,17 +80,20 @@ def register():
     return jsonify({'message': 'New User created...'})
 
 @app.route('/api/user', methods=['GET'])
-def get_all_users():
+@token_required
+def get_all_users(current_user):
     return jsonify([e.to_dict() for e in User.query.all()])
 
 @app.route('/api/user/<username>', methods=['GET'])
-def get_one_user(username):
+@token_required
+def get_one_user(current_user, username):
     user = User.query.filter_by(username=username).first_or_404()
     return jsonify(user.to_dict())
 
 
 @app.route('/api/user/<username>', methods=['PUT'])
-def update_user(username):
+@token_required
+def update_user(current_user, username):
     form_data = request.get_json()
     user = User.query.filter_by(username=username).first_or_404()
 
@@ -105,8 +106,19 @@ def update_user(username):
     return jsonify({'message': 'The user has been updated...'})
 
 
+@app.route('/api/user/<username>/promote', methods=['PUT'])
+@token_required
+def promote_user(current_user, username):
+    form_data = request.get_json()
+    user = User.query.filter_by(username=username).first_or_404()
+    user.promote_user()
+    db.session.commit()
+
+    return jsonify({'message': 'The user has been promoted to an admin...'})
+
 @app.route('/api/user/<username>', methods=['DELETE'])
-def delete_user(username):
+@token_required
+def delete_user(current_user, username):
     user = User.query.filter_by(username=username).first_or_404()
     db.session.delete(user)
     db.session.commit()
