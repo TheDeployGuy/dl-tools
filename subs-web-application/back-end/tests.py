@@ -19,6 +19,12 @@ class UserModelCase(unittest.TestCase):
         self.assertFalse(u.check_password('passsword-secret'))
         self.assertTrue(u.check_password('super-secret-password'))
 
+    def test_admin_promotion(self):
+        u = User(username='Jason')
+        self.assertFalse(u.is_admin)
+        u.promote_user()
+        self.assertTrue(u.is_admin)
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

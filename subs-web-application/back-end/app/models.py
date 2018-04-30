@@ -26,9 +26,13 @@ class User(UserMixin, db.Model):
         return {
             'id': self.id,
             'username': self.username,
-            'last_seen': self.last_seen
+            'last_seen': self.last_seen,
+            'is_admin': self.is_admin
         }
 
+    def promote_user(self):
+        self.is_admin = True
+        
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
