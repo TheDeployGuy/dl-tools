@@ -16,6 +16,7 @@ class User(UserMixin, db.Model):
     # Argument 3 = Defines how the database query for the relationship will be issues
     entries = db.relationship('Entry', backref='author', lazy='dynamic')
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
+    is_admin = db.Column(db.Boolean, default=False)
     
     # This method tells Python how to print objects of this class.
     def __repr__(self):
