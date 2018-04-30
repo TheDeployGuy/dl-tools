@@ -125,6 +125,7 @@ def update_user(current_user, username):
 
 @app.route('/api/user/<username>/promote', methods=['PUT'])
 @token_required
+@admin_required
 def promote_user(current_user, username):
     form_data = request.get_json()
     user = User.query.filter_by(username=username).first_or_404()
@@ -135,6 +136,7 @@ def promote_user(current_user, username):
 
 @app.route('/api/user/<username>', methods=['DELETE'])
 @token_required
+@admin_required
 def delete_user(current_user, username):
     user = User.query.filter_by(username=username).first_or_404()
     db.session.delete(user)
@@ -145,28 +147,32 @@ def delete_user(current_user, username):
 
 ############# Entries Routes ###################
 @app.route('/api/entry', methods=['POST'])
-def add_entry():
+@token_required
+def add_entry(current_user):
     form_data = request.get_json()
 
-    entry = Entry(details=form_data['details'], user_id=form_data['user_id'])
+    entry = Entry(details=form_data['details'], user_id=current_user['id'])
     db.session.add(entry)
     db.session.commit()
 
     return jsonify({'message': 'New Subs Entry has been created...'})
 
 @app.route('/api/entry', methods=['GET'])
-def get_entries():
+@token_required
+def get_entries(current_user):
     return jsonify([e.to_dict for e in Entry.query.all()])
 
 @app.route('/api/entry/<id>', methods=['GET'])
-def get_entry(id):
+@token_required
+def get_entry(current_user, id):
     # Get specific entry, need to add check to get Entries for a specific user
     entry = Entry.query.filter_by(id=id).first_or_404()
     return jsonify({'entry': entry})
 
 # Update entry
 @app.route('/api/entry/<id>', methods=['PUT'])
-def update_entry(id):
+@token_required
+def update_entry(current_user, id):
     form_data = request.get_json()
     entry = Entry.query.filter_by(id=id).first_or_404()
 
@@ -179,7 +185,8 @@ def update_entry(id):
     
 # Delete entry
 @app.route('/api/entry/<id>', methods=['DELETE'])
-def delete_entry(id):
+@token_required
+def delete_entry(current_user, id):
     entry = Entry.query.filter_by(id=id).first_or_404()
     db.session.delete(entry)
     db.session.commit()
