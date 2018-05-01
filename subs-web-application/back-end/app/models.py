@@ -1,9 +1,10 @@
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
-from app import db
+from datetime import datetime, timedelta
+from app import db, app
 #  Since the implementations are fairly generic, Flask-Login provides a mixin class called UserMixin that includes generic implementations that are appropriate for most user model classes. 
 from flask_login import UserMixin
 from app import login
+import jwt
 
 # All models inherit from the Base Flask-SqlAlchemy Model
 class User(UserMixin, db.Model):
@@ -38,6 +39,12 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+    def generate_auth_token(self, expires_in=30):
+        return jwt.encode(
+            {'id': self.id, 'exp': datetime.utcnow() + timedelta(minutes=expires_in)}, 
+            app.config['SECRET_KEY']).decode('UTF-8')
+
 
 class Entry(db.Model):
     id = db.Column(db.Integer, primary_key=True)

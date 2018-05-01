@@ -64,13 +64,8 @@ def login():
     if user is None or not user.check_password(auth['password']):
         return jsonify({ 'message': 'Invalid username or password'})
     else:
-        token = jwt.encode({
-            'id': user.id,
-            'exp': datetime.utcnow() + timedelta(minutes=30)
-        }, app.config['SECRET_KEY'])
-
         #todo: Return more details
-        return jsonify({ 'token' : token.decode('UTF-8')})
+        return jsonify({ 'token' : user.generate_auth_token()})
 
 @app.route('/api/logout')
 def logout():

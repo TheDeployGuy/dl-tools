@@ -25,6 +25,9 @@ class UserModelCase(unittest.TestCase):
         u.promote_user()
         self.assertTrue(u.is_admin)
 
-
+    def test_auth_token_generation(self):
+        u = User(username='Bob')
+        self.assertTrue(len(u.generate_auth_token()) > 0)
+        
 if __name__ == '__main__':
     unittest.main(verbosity=2)
