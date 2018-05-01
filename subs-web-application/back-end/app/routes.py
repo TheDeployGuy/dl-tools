@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from flask_login import current_user, login_required
-from flask import render_template, url_for, redirect, jsonify, request, make_response
+from flask import render_template, url_for, redirect, jsonify, request, make_response, session
 from app.models import User, Entry
 from app import app, db
 import jwt
@@ -24,6 +24,7 @@ def token_required(f):
             current_user = User.query.filter_by(id=data['id']).first()
             # todo: Think about better place for this...
             current_user.last_seen = datetime.utcnow()
+            session['user_is_admin'] = current_user.is_admin
             db.session.commit()
         except:
             return jsonify({'message': 'Token is invalid'}), 401
@@ -35,15 +36,9 @@ def token_required(f):
 def admin_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        # Since this is the 2nd function called, we know we can already get the token...
-        token = request.headers['x-access-token']
-        try:
-            data = jwt.decode(token, app.config['SECRET_KEY'])
-            current_user = User.query.filter_by(id=data['id']).first()
-            if current_user.is_admin == False:
-                return jsonify({'message': 'Permission Denied'}), 401
-        except:
-            return jsonify({'message': 'admin invalid'}), 401
+        # Since we have already ran the token_required function we can check the value...
+        if session['user_is_admin'] == False:
+            return jsonify({'message': 'Permission Denied'}), 401
         
         return f(*args, **kwargs)
     return decorated
