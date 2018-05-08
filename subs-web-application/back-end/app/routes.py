@@ -19,15 +19,14 @@ def token_required(f):
             return jsonify({'message': 'Token is missing'}), 401
 
         # Need a try catch block in case the token is not valid and it can't be decoded
-        try:
-            data = jwt.decode(token, app.config['SECRET_KEY'])
-            current_user = User.query.filter_by(id=data['id']).first()
-            # todo: Think about better place for this...
-            current_user.last_seen = datetime.utcnow()
-            session['user_is_admin'] = current_user.is_admin
-            db.session.commit()
-        except:
-            return jsonify({'message': 'Token is invalid'}), 401
+        
+        current_user = User.verify_auth_token(token)
+        # todo: Think about better place for this...
+        current_user.last_seen = datetime.utcnow()
+        session['user_is_admin'] = current_user.is_admin
+        db.session.commit()
+        # except:
+        #     return jsonify({'message': 'Token is invalid'}), 401
 
         return f(current_user, *args, **kwargs)
 

@@ -43,8 +43,16 @@ class User(UserMixin, db.Model):
     def generate_auth_token(self, expires_in=30):
         return jwt.encode(
             {'id': self.id, 'exp': datetime.utcnow() + timedelta(minutes=expires_in)}, 
-            app.config['SECRET_KEY']).decode('UTF-8')
+            app.config['SECRET_KEY'], algorithm='HS256').decode('UTF-8')
 
+    @staticmethod
+    def verify_auth_token(token):
+        try:
+            id = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])['id']
+            print (id)
+        except:
+            return 
+        return User.query.get(id)
 
 class Entry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
