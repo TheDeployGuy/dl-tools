@@ -3,6 +3,7 @@ from config import Config
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
+from flask_cors import CORS
 from logging.handlers import RotatingFileHandler, logging
 import os
 
@@ -13,6 +14,8 @@ db = SQLAlchemy(app)
 # Migrate instance takes the flask instance and the db instance
 migrate = Migrate(app, db)
 login = LoginManager(app)
+
+CORS(app)
 
 if not app.debug:
     if not os.path.exists('logs'):
