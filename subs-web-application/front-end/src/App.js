@@ -1,14 +1,15 @@
-import React, { Component, Fragment } from 'react';
+import React from 'react';
 import SubsForm from './SubsForm';
+import Navbar from './Navbar'
 import './App.css';
 
-class App extends Component {
+class App extends React.Component {
   render() {
     return (
-      <Fragment>
-        <h1>DL Subs Tracker</h1>
+      <React.Fragment>
+        <Navbar />
         <SubsForm />
-      </Fragment>
+      </React.Fragment>
     );
   }
 }
