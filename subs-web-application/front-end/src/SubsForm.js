@@ -11,6 +11,11 @@ class SubsForm extends Component {
         autocomplete: []
     }
 
+    componentDidMount() {
+        fetch(`http://localhost:5000/api/user`)
+            .then(response => response.json())
+            .then(json => console.log(json));
+    }
     onSubmit = async (e) => {
         e.preventDefault();
     
@@ -43,7 +48,7 @@ class SubsForm extends Component {
 
     render() {
         return (
-        <form onSubmit={this.onSubmit}>
+        <form onSubmit={this.onSubmit} className="p-3">
             <div className="form-group">
               <label htmlFor="inputName">Player name</label>
               <input type="text" className="form-control form-border" id="inputName" name="name" placeholder="Enter player name" value={this.state.name} onChange={this.handleInputChange} />
